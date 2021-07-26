@@ -1,6 +1,0 @@
-{
-    "server_name":"[YOUR_LIGHTSAIL_SERVER_NAME]",
-    "server_ip_address":"[YOUR_LIGHTSAIL_SERVER_IP]",
-    "domain":"[YOUR_DOMAIN]",
-    "email":"[YOUR_CAPROVER_CONTACT_EMAIL]"
-}

@@ -1,11 +1,3 @@
-locals {
-  config_json = jsondecode(file("./config.json"))
-  server_ip_address = local.config_json.server_ip_address
-  server_name = local.config_json.server_name
-  domain = local.config_json.domain
-  email = local.config_json.email
-}
-
 // Firewall - Open ports for SSH, CapRover, etc 
 // here required ports for CapRover: https://caprover.com/docs/get-started.html
 locals {
@@ -17,7 +9,7 @@ resource "null_resource" "open_firewall_ports" {
   provisioner "local-exec" {
     command = replace(chomp(<<-EOT
       aws lightsail put-instance-public-ports
-      --instance-name ${local.server_name}
+      --instance-name ${var.caprover_server_name}
       --port-infos
       %{ for port in local.tcp_ports }
         fromPort=${port},toPort=${port},protocol=tcp
@@ -49,7 +41,7 @@ resource "null_resource" "download_ssh_key" {
 resource "null_resource" "install_caprover" {
   connection {
     type  = "ssh"
-    host  = local.server_ip_address
+    host  = var.caprover_server_ip_address
     user  = "ubuntu"
     port  = 22
     agent = true
@@ -88,11 +80,11 @@ resource "random_password" "caprover_password" {
 // Create CapRover Config.Json
 resource "local_file" "caprover_create_json" {
     content  = jsonencode({
-      "caproverIP": local.server_ip_address,
+      "caproverIP": var.caprover_server_ip_address,
       "caproverPassword": "captain42",
-      "caproverRootDomain": local.domain,
+      "caproverRootDomain": var.caprover_domain,
       "newPassword": random_password.caprover_password.result,
-      "certificateEmail": local.email,
+      "certificateEmail": var.caprover_email,
       "caproverName": "lcn_caprover",
     })
     filename = "caprover.json"
